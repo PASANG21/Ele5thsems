@@ -3,26 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PU ProbStat Ch.1 Mastery Guide — Descriptive Statistics</title>
+    <title>PU ProbStat Mastery Guide — Units 1–8 (Offline Edition)</title>
     <meta
       name="description"
-      content="Purbanchal University 5th Semester Probability & Statistics Unit 1 (Descriptive Statistics) complete exam-mastery study guide, step-by-step derivations, formula sheet, solved model questions, and interactive statistics lab."
+      content="Purbanchal University 5th Semester Probability & Statistics (Units 1–8) complete offline exam-mastery study guide: theory notes, derivations, formula sheets, solved model questions, exam traps, and interactive verification labs."
     />
-    <meta property="og:title" content="PU ProbStat Ch.1 Mastery Guide — Descriptive Statistics" />
+    <meta property="og:title" content="PU ProbStat Mastery Guide — Units 1–8" />
     <meta
       property="og:description"
-      content="Complete Purbanchal University 5th Semester B.E. exam study guide for Descriptive Statistics: theory notes, derivations, formula sheet, solved model questions, and exam traps."
+      content="Complete Purbanchal University 5th Semester B.E. offline exam study guide covering all 8 units of Probability & Statistics."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('pu-probstat-theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-sky-100 selection:text-sky-900">
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-sky-100 selection:text-sky-900 dark:selection:bg-sky-900/50 dark:selection:text-sky-100 transition-colors">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

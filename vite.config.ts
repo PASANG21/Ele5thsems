@@ -1,37 +1,76 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import fs from 'fs';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, type Plugin} from 'vite';
+
+function inlineSingleFileHtml(): Plugin {
+  return {
+    name: 'inline-single-file-html',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const htmlKey = Object.keys(bundle).find((fileName) => fileName.endsWith('.html'));
+      if (!htmlKey) return;
+
+      const htmlAsset = bundle[htmlKey];
+      if (htmlAsset.type !== 'asset' || typeof htmlAsset.source !== 'string') return;
+
+      let html = htmlAsset.source;
+
+      const cssChunks: string[] = [];
+      const jsChunks: string[] = [];
+
+      for (const [fileName, output] of Object.entries(bundle)) {
+        if (fileName.endsWith('.css') && output.type === 'asset') {
+          const cssText =
+            typeof output.source === 'string'
+              ? output.source
+              : Buffer.from(output.source).toString('utf8');
+          cssChunks.push(cssText);
+          delete bundle[fileName];
+        } else if (fileName.endsWith('.js') && output.type === 'chunk') {
+          jsChunks.push(output.code);
+          delete bundle[fileName];
+        }
+      }
+
+      // Remove external stylesheet, modulepreload, and module script tags emitted by Vite
+      html = html.replace(/<link\b[^>]*rel=["']stylesheet["'][^>]*>\s*/gi, '');
+      html = html.replace(/<link\b[^>]*rel=["']modulepreload["'][^>]*>\s*/gi, '');
+      html = html.replace(/<script\b[^>]*\bsrc=["'][^"']+["'][^>]*>\s*<\/script>\s*/gi, '');
+
+      if (cssChunks.length > 0) {
+        const safeCss = cssChunks.join('\n').replace(/<\/style/gi, '<\\/style');
+        html = html.replace('</head>', () => `    <style>${safeCss}</style>\n  </head>`);
+      }
+
+      if (jsChunks.length > 0) {
+        const safeJs = jsChunks.join('\n').replace(/<\/script/gi, '<\\/script');
+        html = html.replace('</body>', () => `    <script>${safeJs}</script>\n  </body>`);
+      }
+
+      htmlAsset.source = html;
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    base: '/Ele5thsems/',
-    plugins: [
-      react(),
-      tailwindcss(),
-      // Copies src/assets into dist/ so root-relative URLs like
-      // "/src/assets/images/..." (e.g. generate_image output) still resolve
-      // in production builds. Do not remove.
-      {
-        name: 'copy-unbundled-src-assets',
-        apply: 'build',
-        closeBundle(error?: Error): void {
-          if (error) {
-            return;
-          }
-          const distDir = path.resolve(__dirname, 'dist');
-          const srcAssets = path.resolve(__dirname, 'src/assets');
-          const distAssets = path.resolve(distDir, 'src/assets');
-          if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
-            fs.cpSync(srcAssets, distAssets, {recursive: true, force: true});
-          }
-        },
-      },
-    ],
+    plugins: [react(), tailwindcss(), inlineSingleFileHtml()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+      },
+    },
+    build: {
+      copyPublicDir: false,
+      cssCodeSplit: false,
+      assetsInlineLimit: 100_000_000,
+      rollupOptions: {
+        output: {
+          format: 'iife' as const,
+          inlineDynamicImports: true,
+        },
       },
     },
     server: {
